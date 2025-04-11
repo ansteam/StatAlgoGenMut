@@ -1,0 +1,146 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2759
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica-Bold;\f1\fswiss\fcharset0 Helvetica;\f2\fnil\fcharset0 Menlo-Bold;
+\f3\fswiss\fcharset0 Helvetica-BoldOblique;\f4\fswiss\fcharset0 Helvetica-LightOblique;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww16840\viewh10220\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b\fs28 \cf0 SOFTWARE TUTORIAL
+\f1\b0\fs24 \
+\
+This note gives  a quick tutorial on how to use the codes present in this library. A special folder named 
+\f2\b neural networks 
+\f1\b0 contains the codes devoted to neural network methods and  a tutorial on these codes named 
+\f2\b README.txt.
+\f1\b0  In the sequel we will only discuss the other codes that is those  not contained in that folder. \
+\
+These codes contain a lot of comments which recall the information given in this note.\
+\
+The softwares 
+\f2\b demo_valid.py 
+\f1\b0 and 
+\f2\b demo_valid_simpl.py 
+\f1\b0 both deals with simulated data and their purpose is to validate the selection model algorithm that uses distance minimization. The second one 
+\f2\b demo_valid_simpl.py 
+\f1\b0 is merely a simplified version of the first one where the two mutation model, called in the companion article \'ab\'a0Model 2\'a0\'bb, has 4 parameters instead of 6 which makes it runs faster. \
+The third code 
+\f2\b demo_real_KSO_simpl3ns.py
+\f1\b0  is designed to work on our real breast/ovarian cancer data but for legal reason we cannot provide this data. It should work on any data file provided it has the explained format. The code is complemented by the procedure 
+\f2\b realdata.py
+\f1\b0  which was specifically designed to deal the missing values in our file. \
+Thus in the sequel we will only discuss the software 
+\f2\b demo_valid_simpl.py 
+\f1\b0 which is ready for direct use. This software is a demonstration program to test the validity of the distance minimization algorithm for parametric estimation and model selection, on simulated data. \
+With the default values this code will run in a few minutes on an ordinary machine but the result are mediocre. The much better results described in the article were obtained with far more demanding sets of parameters and the running time was counted in hours or even days. Note however that the code is sped up by the use of the numba package. \
+\
+\
+
+\f3\i\b What does this software ?
+\f1\i0\b0 \
+\
+This software performs different tasks. See companion article for more explanations. \
+First, it produces a dataset as a set of families (genotype + phenotype) with prescribed genealogical structure.\
+These data can be produced according to three models : no mutation \'ab\'a0Model 0\'a0\'bb, single mutation \'ab\'a0Model 1\'a0\'bb, double mutation \'ab\'a0Model 2\'a0\'bb.\
+Secondly, for each (simulated) dataset it finds the  distance to each of the three models that is the closest distance --according to certain statistics-- between the simulated dataset and replicas generated with certain values of the parameters for the model (see below). Finally ii chooses the model that achieves the  smallest distance.\
+Genotypes are generated but hidden during analysis. Phenotypes are the visible data. The phenotype of an individual is the age of onset of the disease K or 200 which means  by convention that K has not occured. \
+In Model 1, the genotype is 1 (mutated) or 0 (wild type).\
+In Model 2, the genotype is [0,0] i.e. wild type or [1,0] i.e. having a mutation on the first gene or [0,1] i.e. having a mutation on the second gene  or [1,1] i.e. doubly mutated.\
+In Model 0, no mutation is considered.\
+\
+
+\f3\i\b How is this code structured ?\
+\
+
+\f1\i0\b0 Here are the successive components of the code :\
+\
+
+\f4\i \'ab\'a0Specifying the parameters in each model.
+\f1\i0 \'a0\'bb\
+This is where the parameters of each model are declared. \
+\
+Function
+\f4\i  arbre_reg : c
+\f1\i0 reates the genealogical structure of a regular tree with specified number of generations and number of children per couple. This structure is coded by an array with 4 lines. \
+\
+Functions 
+\f4\i draw_geno1
+\f1\i0  and 
+\f4\i draw_geno2 : 
+\f1\i0 generate random genotypes on a specified genealogical tree with specified parameters, according to  models 1 or 2, respectively. \
+\
+Function 
+\f4\i phenotype 
+\f1\i0 generates a random phenotype given a genealogical tree, the genotypes of the individuals in this tree and the values of the parameters.\
+\
+Function 
+\f4\i proxi
+\f1\i0  introduces a notion of proximity (positive of negative) between the phenotypes of two individuals.\
+\
+Functions 
+\f4\i score_par
+\f1\i0  and s
+\f4\i core_frat 
+\f1\i0 sums the proximity score between each individual in a tree and its relatives, the ascendants for the first one and the siblings for the second one.\
+\
+Function 
+\f4\i dist_to_mod 
+\f1\i0 computes the distance between a dataset completely summarized by its summary "sta_summ" and a model. In practice it searches  the minimum distance between sta_summ and the statistical summary of replicated data with optimal parameters and generated according to the model in question. \
+\
+
+\f4\i \'ab\'a0Global parameters\'a0\'bb 
+\f1\i0 sets
+\f4\i  
+\f1\i0 a few fundamental parameters for the test datasets i.e. the ones on which the algorithm will be tested. More precisely it sets the number of datasets, the numbers of trees each one contains, and the minimum number of illness cases in each family.\
+\
+Finally the main part of the program carries out the analysis, successively for dataset obtained by each of the three models.  It displays the results regarding the quality of the model selection via a confusion matrix and the estimation of the parameters.\
+\
+
+\f4\i \
+
+\f3\b What can be tuned in this software ?\
+\
+
+\f1\i0\b0 Here is a list of all the parameters that can be changed, by order of appearance in the software.\
+
+\f4\i age_declar_mut 
+\f1\i0 is an array of dimension 100 giving for each age the probability of onset of the disease for a mutated individual.\
+
+\f4\i age_declar_norm
+\f1\i0  same for a wild type individual.\
+
+\f4\i ampl_para0 
+\f1\i0 is \'97for Model 0\'97an array with two lines and two columns, each line giving the lower and the upper value of the corresponding parameter,  see the description of each parameter in the comments of the code.\
+
+\f4\i ampl_para1
+\f1\i0  same   \'97for Model 1\'97 but with 3 lines.\
+
+\f4\i ampl_para2 
+\f1\i0 same  \'97for Model 2\'97 but with 4 lines .\
+The possible results of function 
+\f4\i proxi 
+\f1\i0 can be changed. Default values are -3, 1, 5, 10.\
+In function
+\f4\i  dist_to_mod 
+\f1\i0 the array 
+\f4\i nbr_maill_para 
+\f1\i0 gives the numbers of nodes in each dimension of the parameter space.\
+
+\f4\i numb_simu_ini 
+\f1\i0 and 
+\f4\i numb_simu_refin 
+\f1\i0 are the number of simulated tree used to compute the statistical summary associated to a certain set of parameters, the first one in the first approximate search of the minimum and the second one in the refined phase of this search. \
+
+\f4\i size_best 
+\f1\i0 is the number of best values kept memorized.\
+
+\f4\i loc_try_refin 
+\f1\i0 is the number of tries in the second phase of the search around a point selected during the first phase.\
+
+\f4\i numb_essai, numb_data, min_K 
+\f1\i0 are three global parameters already discussed above. Also at this point, a 
+\f4\i random seed 
+\f1\i0 can be assigned.\
+\
+\
+}
